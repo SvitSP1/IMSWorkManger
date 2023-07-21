@@ -1,65 +1,225 @@
-import 'package:app/popups/code.dart';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
-import 'package:app/app.dart';
+import 'package:hexcolor/hexcolor.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'main.dart';
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({
+    Key? key,
+  }) : super(
+          key: key,
+        );
 
-class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+  @override
+  State<LoginScreen> createState() => LoginScreenState();
+}
+
+class LoginScreenState extends State<LoginScreen> {
+  String username = '';
+  String password = '';
+  String name = '';
+
+  void init1() async {
+    var name1 = await App().getValue('/info/name');
+
+    setState(() {
+      name = name1.toString();
+    });
+  }
+
+  void Login() async {
+    if (!(username == '' && username == '')) {
+      var password1 = await App().getValue('workers/' + username + '/code');
+      print('-------------------- ' + password1.toString());
+      if (!(password1.toString() == '')) {
+        if (password1.toString() == password) {
+          Fluttertoast.showToast(
+              msg: "Uspešno prijavljen!",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          App().setLocal('user', username);
+          Navigator.pop(context);
+        } else {
+          Fluttertoast.showToast(
+              msg: "Narobe geslo ali uporabniško ime.21",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+        }
+      } else {
+        Fluttertoast.showToast(
+            msg: "Narobe geslo ali uporabniško ime.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    } else {
+      Fluttertoast.showToast(
+          msg: "Prosimo upišite use podatke.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
+  }
+
+  initState() {
+    // ignore: avoid_print
+    init1();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final myController = TextEditingController();
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            Container(
-              height: 250,
-            ),
-            const Text(
-              "Prijava",
-              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: myController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'uporabniško ime',
-              ),
-            ),
-            Container(
-              height: 50,
-              width: 150,
-              decoration: BoxDecoration(color: Colors.blue),
-              margin: const EdgeInsets.all(25),
-              child: TextButton(
-                onPressed: () {
-//                  App().getValue('workers/svit/code');
-                  App()
-                      .getValue('workers/${myController.text}/code')
-                      .then((value) {
-                    print('Retrieved Value: $value');
-                    // Use the retrieved value in your application logic
-                    if (value != 0) {
-                      App().setLocal('code', value.toString());
-                      App().setLocal('tempsUser', myController.text);
-                      App().botomSheetBuilder(const CodeWidget(), context);
-                    }
-                  });
-                  //
-                },
-                child: const Text(
-                  'Naprej',
-                  style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+    return Material(
+      child: Flex(
+        direction: Axis.vertical,
+        children: [
+          Flexible(
+            flex: 3,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 35,
                 ),
-              ),
-            )
-          ],
-        ),
+                Text(
+                  name,
+                  style: TextStyle(
+                      fontSize: 48,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  'demin.si prijava',
+                  style: TextStyle(
+                      fontSize: 32,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            flex: 8,
+            child: Stack(
+              children: [
+                Positioned(
+                    left: 30,
+                    right: 30,
+                    top: 0,
+                    child: Text(
+                      'uporabnisko ime',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 26),
+                    )),
+                Positioned(
+                  left: 30,
+                  right: 30,
+                  top: 40,
+                  child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      decoration: BoxDecoration(
+                        color: HexColor('D9D9D9'),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(width: 5),
+                      ),
+                      alignment: Alignment.center,
+                      child: TextField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          border:
+                              OutlineInputBorder(borderSide: BorderSide.none),
+                          hintText: 'Janez1',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            username = value;
+                          });
+                        },
+                      )),
+                ),
+                Positioned(
+                    left: 30,
+                    right: 30,
+                    top: 110,
+                    child: Text(
+                      'geslo',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 26,
+                      ),
+                    )),
+                Positioned(
+                  left: 30,
+                  right: 30,
+                  top: 150,
+                  child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      decoration: BoxDecoration(
+                        color: HexColor('D9D9D9'),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(width: 5),
+                      ),
+                      alignment: Alignment.center,
+                      child: TextField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            border:
+                                OutlineInputBorder(borderSide: BorderSide.none),
+                            hintText: '**************'),
+                        onChanged: (value) {
+                          setState(() {
+                            password = value;
+                          });
+                        },
+                      )),
+                ),
+                Positioned(
+                    left: 30,
+                    right: 30,
+                    top: 240,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: HexColor('D9D9D9'),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(width: 5),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          Login();
+                        },
+                        child: Text('Prijava',
+                            style: TextStyle(
+                              fontSize: 42,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
+                            textAlign: TextAlign.center),
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

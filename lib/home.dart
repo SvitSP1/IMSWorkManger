@@ -1,300 +1,427 @@
+import 'package:app/internet.dart';
 import 'package:app/login.dart';
 import 'package:app/main.dart';
+import 'package:app/popups/nfc%20.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:restart_app/restart_app.dart';
+import 'package:hexcolor/hexcolor.dart';
 
-class Counter extends ValueNotifier<String> {
-  Counter() : super('0');
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
-  void increment() {
-    App().getLocal('user', (value1) {
-      Future.delayed(Duration(seconds: 1), () {
-        App().getValue12('workers/$value1/working').then((value12) {
-          print(value1.toString() + ' sjakhkaghashkjlf');
-          if (value12 == true) {
-            value = 'Delate';
-            notifyListeners();
-          } else {
-            value = 'Ne delate';
-            notifyListeners();
-          }
-        });
-      });
-    });
-  }
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class HomeWidget extends StatelessWidget {
-  const HomeWidget({super.key});
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isWorking = false;
+  String totalWorkTime = '0:00:00';
 
-  void setUp1(BuildContext context) {
-    DateTime now = DateTime.now();
-    int dayOfMonth = now.day;
-    int month = now.month;
-    int year = now.year;
-
-    String user;
-    App().getLocal('user', (value) {
-      print(value.toString() + 'samo to in pol');
-      user = value.toString();
-      if (user == 'null') {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const LoginView()));
-
-        print(user + 'sadsad');
+  void innit1() async {
+    App().getLocal('user', (value) async {
+      if (!(value == null) && !(value == '')) {
+        print(value + ' --------------------------------');
+        var working = await App().getValue('workers/$value/working');
+        if (working == true) {
+          setState(() {
+            _isWorking = true;
+          });
+        } else {
+          setState(() {
+            _isWorking = false;
+          });
+        }
       } else {
-        App().getValue('workers/$user/working').then((value) {
-          if (value == true) {
-            App()
-                .getValue('worker/$user/data/$year/$month/$dayOfMonth')
-                .then((value) {
-              if (value == 0 || value == null) {
-                App().addItemToList(
-                    'workers/$user/data/$year/$month/${dayOfMonth - 1}/time/stop',
-                    '23:59:59');
-                App().addItemToList(
-                    'workers/$user/data/$year/$month/$dayOfMonth/time/start',
-                    '00:00:01');
-              }
-            });
-          }
-        });
-        print(user + 'sadsad1');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
       }
+    });
+  }
+
+  Future<void> sleep(int seconds) {
+    return Future.delayed(Duration(seconds: seconds));
+  }
+
+  void getTotalTime1() async {
+    var user;
+    App().getLocal('user', (value) {
+      user = value;
+    });
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    int currentMonth = now.month;
+    int currentDay = now.day;
+    await sleep(1);
+// Assuming getValue and getValue12 are asynchronous functions returning Future<bool>
+
+    var _startArr = await App().getValue(
+        'workers/$user/data/$currentYear/$currentMonth/$currentDay/time/start');
+    var _stopArr = await App().getValue(
+        'workers/$user/data/$currentYear/$currentMonth/$currentDay/time/stop');
+
+    if (_startArr != null) {
+      List<dynamic> startArr = List.from(_startArr as Iterable<dynamic>);
+      List<dynamic> stopArr = List.from(_stopArr as Iterable<dynamic>);
+      try {
+        String totalTimeResult = App().calculateTotalTime(
+          App().convertDynamicListToStringList(startArr),
+          App().convertDynamicListToStringList(stopArr),
+        );
+        setState(() {
+          totalWorkTime = totalTimeResult;
+        });
+        print(totalTimeResult);
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+  }
+
+  void workButton1(BuildContext context) async {
+    var user;
+    App().getLocal('user', (value) {
+      user = value;
+    });
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    int currentMonth = now.month;
+    int currentDay = now.day;
+    await sleep(1);
+// Assuming getValue and getValue12 are asynchronous functions returning Future<bool>
+    bool bool1 =
+        await App().getValue12('workers/${user.toString()}/nfc') ?? false;
+    bool bool2 = await App().getValue12('workers/$user/working') ??
+        false; // Print the value of bool1 to check if it's null or not
+
+    var _startArr = await App().getValue(
+        'workers/$user/data/$currentYear/$currentMonth/$currentDay/time/start');
+    var _stopArr = await App().getValue(
+        'workers/$user/data/$currentYear/$currentMonth/$currentDay/time/stop');
+
+    print(bool1);
+    if (!bool1) {
+      App().toggleWorking(bool2 as bool, user);
+      if (_startArr != null) {
+        await sleep(1);
+        List<dynamic> startArr = List.from(_startArr as Iterable<dynamic>);
+        List<dynamic> stopArr = List.from(_stopArr as Iterable<dynamic>);
+        try {
+          String totalTimeResult = App().calculateTotalTime(
+            App().convertDynamicListToStringList(startArr),
+            App().convertDynamicListToStringList(stopArr),
+          );
+          setState(() {
+            totalWorkTime = totalTimeResult;
+          });
+          print(totalTimeResult);
+        } catch (e) {
+          print('Error: $e');
+        }
+      }
+
+      // try {
+      //   String totalTimeResult = App().calculateTotalTime(
+      //     App().convertDynamicListToStringList(startArr),
+      //     App().convertDynamicListToStringList(stopArr),
+      //   );
+      //   print(totalTimeResult);
+      // } catch (e) {
+      //   print('Error: $e');
+      // }
+    } else {
+      //ignore: use_build_context_synchronously
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(86), // Set the desired border radius
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                  86), // Use the same border radius as the Dialog
+              child: NfcWidget(
+                description1: 'prisloni telefon k terminalu',
+                title1: 'Začetek dela',
+                description2: 'delo ste uspešno začeli',
+                state1: 1,
+                user: user,
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  void workButton() {
+    workButton1(context);
+    setState(() {
+      _isWorking = !_isWorking;
     });
   }
 
   @override
+  initState() {
+    // ignore: avoid_print
+    innit1();
+    getTotalTime1();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Counter counter = Counter();
-    counter.increment();
-    String working2 = '';
-    String working1 = 'Loading';
-
-    Future.delayed(Duration(seconds: 1), () {
-      if (working2 == '1') {
-        working1 = 'Delate';
-      } else {
-        working1 = 'Ne delate';
+    void check2() async {
+      if (await App().checkInternet() == false) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Internet()),
+        );
       }
-    });
+    }
 
-    setUp1(context);
-    return MaterialApp(
-      home: Scaffold(
-          body: Column(
+    check2();
+
+    return Scaffold(
+      body: Stack(
         children: [
           Container(
-            height: 200,
-          ),
-          Image.network(
-            'https://www.i-ms.si/wp-content/uploads/2023/02/IMS_logo-3.jpg',
-          ),
-          ValueListenableBuilder<String>(
-              valueListenable: counter,
-              builder: (context, value, _) {
-                return Text(
-                  'Status: $value',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 40,
+            decoration: const BoxDecoration(color: Colors.white),
+            child: Flex(
+              direction: Axis.vertical,
+              children: [
+                Flexible(
+                  flex: 4,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          height: 20,
+                        ),
+                        const Text(
+                          'Evidenca dela',
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: HexColor('D9D9D9'),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          width: 270,
+                          height: 170,
+                          child: Center(
+                            child: Image.asset(
+                              'assets/logo.png',
+                              width: 230,
+                              height: 150,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              }),
-          const MainWidget(),
+                ),
+                Flexible(
+                  flex: 3,
+                  child: StatefulBuilder(builder: (context, setState) {
+                    return Container(
+                      color: Colors.white,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 15,
+                          ),
+                          !_isWorking
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                          color: Colors.black, width: 5)),
+                                  width: 250,
+                                  height: 100,
+                                  child: TextButton(
+                                    onPressed: workButton,
+                                    child: const Text(
+                                      'Začni',
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                          color: Colors.black, width: 5)),
+                                  width: 250,
+                                  height: 100,
+                                  child: TextButton(
+                                    onPressed: workButton,
+                                    child: const Text(
+                                      'Ustavi',
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          Container(
+                            height: 5,
+                          ),
+                          Material(
+                            child: Text(
+                              'Čas: $totalWorkTime',
+                              style: const TextStyle(
+                                  fontSize: 32,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+                Flexible(
+                  flex: 4,
+                  child: Container(
+                    width: 340,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: HexColor('D9D9D9'),
+                    ),
+                    child: Column(
+                      children: [
+                        Material(
+                          color: HexColor('D9D9D9'),
+                          child: const Text(
+                            'Malica',
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Container(
+                          height: 15,
+                        ),
+                        Center(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 30,
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                        color: Colors.black, width: 5)),
+                                width: 125,
+                                height: 50,
+                                child: TextButton(
+                                    onPressed: () {},
+                                    child: const Text(
+                                      'Začni',
+                                      style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black),
+                                    )),
+                              ),
+                              Container(
+                                width: 30,
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                        color: Colors.black, width: 5)),
+                                width: 125,
+                                height: 50,
+                                child: TextButton(
+                                    onPressed: () {},
+                                    child: const Text(
+                                      'Ustavi',
+                                      style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black),
+                                    )),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          height: 10,
+                        ),
+                        Material(
+                          color: HexColor('D9D9D9'),
+                          child: const Text(
+                            'Čas 0:00:00',
+                            style: TextStyle(
+                                fontSize: 32,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 20,
+            child: Container(
+              height: 75,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  color: HexColor('D9D9D9'),
+                  borderRadius: BorderRadius.circular(42),
+                  border: Border.all(color: Colors.black, width: 7)),
+              child: TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    'Organiziraj dopust',
+                    style: TextStyle(
+                        fontSize: 32,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black),
+                  )),
+            ),
+          ),
         ],
-      )),
+      ),
     );
-  }
-}
-
-class MainWidget extends StatelessWidget {
-  const MainWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final Counter counter = Counter();
-    String working = '';
-    String brake;
-    String user = '';
-    bool status1 = false;
-    App().getLocal('user', (value) {
-      user = value.toString();
-      print('username: ' + user.toString());
-    });
-
-    App().getLocal('user', (value1) {
-      Future.delayed(Duration(seconds: 1), () {
-        App().getValue12('workers/$value1/working').then((value12) {
-          if (value12 == true) {
-            working = '1';
-          } else {
-            working = '0';
-          }
-        });
-      });
-    });
-
-    Future.delayed(Duration(seconds: 1), () {
-      status1 = true;
-    });
-
-    void handleUserInput() {
-      // Enable user input after 1 second
-      Future.delayed(Duration(seconds: 1), () {
-        counter.increment();
-      });
-    }
-
-    checkLocationProximity();
-    return Row(
-      children: [
-        Container(
-          width: 75,
-        ),
-        Container(
-          width: 100,
-          height: 50,
-          decoration: const BoxDecoration(color: Colors.green),
-          child: TextButton(
-            onPressed: () {
-              DateTime now = DateTime.now();
-              int dayOfMonth = now.day;
-              int month = now.month;
-              int year = now.year;
-              String formattedTime = DateFormat('HH:mm:ss').format(now);
-
-              if (working != '1' && status1 == true) {
-                //TODO remove this
-                //user = 'svit';
-                App().getLocal('user', (value1) {
-                  Future.delayed(Duration(seconds: 1), () {
-                    App().getValue12('workers/$value1/working').then((value12) {
-                      if (value12 == true) {
-                        working = '1';
-                      } else {
-                        working = '0';
-                      }
-                    });
-                  });
-                });
-
-                if (working != '1') {
-                  App().addItemToList(
-                      'workers/$user/data/$year/$month/$dayOfMonth/time/start',
-                      formattedTime);
-                  App().setValue('workers/$user/working', true);
-                  working = '1';
-                  Future.delayed(Duration(seconds: 1), () {
-                    Restart.restartApp();
-                  });
-                } else {
-                  print(2);
-                }
-              }
-            },
-            child: const Text('Začni'),
-          ),
-        ),
-        Container(
-          width: 50,
-        ),
-        Container(
-          width: 100,
-          height: 50,
-          decoration: const BoxDecoration(color: Colors.red),
-          child: TextButton(
-            onPressed: () {
-              DateTime now = DateTime.now();
-              int dayOfMonth = now.day;
-              int month = now.month;
-              int year = now.year;
-              //user = 'svit';
-
-              String formattedTime = DateFormat('HH:mm:ss').format(now);
-              App().getLocal('user', (value1) {
-                Future.delayed(Duration(seconds: 1), () {
-                  App().getValue12('workers/$value1/working').then((value12) {
-                    if (value12 == true) {
-                      working = '1';
-                    } else {
-                      working = '0';
-                    }
-                  });
-                });
-              });
-
-              if (working == '1' && status1 == true) {
-                App().addItemToList(
-                    'workers/$user/data/$year/$month/$dayOfMonth/time/stop',
-                    formattedTime);
-                App().setValue('workers/$user/working', false);
-                working = '0';
-                Future.delayed(Duration(seconds: 1), () {
-                  Restart.restartApp();
-                });
-              } else {
-                // alrady working
-                print(working);
-              }
-            },
-            child: const Text('Ustavi'),
-          ),
-        )
-      ],
-    );
-  }
-
-  void checkLocationProximity() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, handle it accordingly
-      return;
-    }
-
-    // Request location permission
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permission denied, handle it accordingly
-        return;
-      }
-    }
-
-    // Get the current position
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    // Access the latitude and longitude
-    double latitude = position.latitude;
-    double longitude = position.longitude;
-
-    // Selected coordinate
-    double selectedLatitude = 37.7749;
-    double selectedLongitude = -122.4194;
-
-    // Calculate distance between current position and selected coordinate
-    double distanceInMeters = Geolocator.distanceBetween(
-      latitude,
-      longitude,
-      selectedLatitude,
-      selectedLongitude,
-    );
-
-    // Check if the distance is within 500 meters
-    if (distanceInMeters <= 500) {
-      print('Within 500 meters of the selected coordinate');
-    } else {
-      print('Not within 500 meters of the selected coordinate');
-    }
   }
 }

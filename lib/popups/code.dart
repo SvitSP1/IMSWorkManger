@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:restart_app/restart_app.dart';
@@ -27,6 +29,7 @@ class CodeWidget extends StatelessWidget {
 
                     App().getLocal('code', (value) {
                       code = value.toString();
+                      print('1');
                       App().getLocal('tempsUser', (value1) {
                         user = value1.toString();
                         if (code == myController.text) {
@@ -37,6 +40,8 @@ class CodeWidget extends StatelessWidget {
                           Future.delayed(Duration(seconds: 1), () {
                             Restart.restartApp();
                           });
+                        } else {
+                          print('narobe geslo ');
                         }
                       });
                     });
