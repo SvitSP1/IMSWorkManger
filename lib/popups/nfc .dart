@@ -1,3 +1,4 @@
+import 'package:app/home.dart';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -10,15 +11,23 @@ class NfcWidget extends StatefulWidget {
   final String description2;
   final int state1;
   final String user;
+  final BuildContext context;
+  final Function(bool) setLoadCallback;
+  final Function(BuildContext) fun1;
+  final Function(BuildContext, bool) fun2;
 
-  const NfcWidget({
-    Key? key,
-    required this.description1,
-    required this.description2,
-    required this.title1,
-    required this.state1,
-    required this.user,
-  }) : super(key: key);
+  const NfcWidget(
+      {Key? key,
+      required this.description1,
+      required this.description2,
+      required this.title1,
+      required this.state1,
+      required this.user,
+      required this.context,
+      required this.setLoadCallback,
+      required this.fun1,
+      required this.fun2})
+      : super(key: key);
 
   @override
   State<NfcWidget> createState() => NfcWidgetState();
@@ -31,17 +40,32 @@ class NfcWidgetState extends State<NfcWidget> {
   late Stream<NfcTag> _tagStream;
 
   Future<void> android1() async {
-    List<String> _id = App().getValue('info/tags') as List<String>;
+    print('Attempted listening!');
+    List<Object?> _id = await App().getValue('info/tags') as List<Object?>;
+    print('Started listenning');
     await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var tagId = tag.data['nfca']['identifier'];
-      if (_id.contains(tagId)) {
-        print('Susscesfully indentefied.');
+      if (_id.contains(tagId.toString())) {
+        print('Susscesfully indentefied. $tagId');
         setState(() {
           _isDone = true;
         });
+        if (widget.state1 == 1) {
+          widget.fun1(widget.context);
+          Future.delayed(Duration(seconds: 2), () {
+            Navigator.pop(context);
+          });
+        } else if (widget.state1 == 2) {
+          widget.fun2(widget.context, false);
+          Future.delayed(Duration(seconds: 2), () {
+            Navigator.pop(context);
+          });
+        }
       }
       print(
-          '------------------------------------------------------ ${tagId.toString() == '[4, 36, 97, 98, 236, 107, 129]'}');
+          '------------------------------------------------------ ${tagId.toString() == '[4, 115, 96, 98, 236, 107, 129]'}');
+      print('Susscesfully not indentefied. $tagId');
+
       // setState(() {
       //   _tagId = tagId;
       // });
@@ -52,7 +76,7 @@ class NfcWidgetState extends State<NfcWidget> {
     if (Platform.isAndroid) {
       android1();
     } else if (Platform.isIOS) {
-      // iOS-specific code
+      android1();
     }
   }
 
@@ -60,6 +84,13 @@ class NfcWidgetState extends State<NfcWidget> {
   void initState() {
     super.initState();
     startFun();
+  }
+
+  @override
+  void dispose() {
+    NfcManager.instance.stopSession();
+    print('stopped, and disposing');
+    super.dispose();
   }
 
   @override

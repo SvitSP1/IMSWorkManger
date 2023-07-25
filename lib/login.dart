@@ -101,7 +101,7 @@ class LoginScreenState extends State<LoginScreen> {
                       fontWeight: FontWeight.w700),
                 ),
                 Text(
-                  'demin.si prijava',
+                  'ecas.si prijava',
                   style: TextStyle(
                       fontSize: 32,
                       fontFamily: 'Inter',

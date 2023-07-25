@@ -1,4 +1,6 @@
 import 'package:app/home.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -8,21 +10,15 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
 
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyC2avdImgYjTlCcoqsFdQ651fQ4OQ3piD8",
-      authDomain: "workmanager-bf739.firebaseapp.com",
-      databaseURL: "https://workmanager-bf739-default-rtdb.firebaseio.com/",
-      projectId: "workmanager-bf739",
-      storageBucket: "workmanager-bf739.appspot.com",
-      messagingSenderId: "1026107424905",
-      appId: "1:1026107424905:web:236b5f90ab278ec0b90658",
-      measurementId: "G-5WGSCME9R6",
-    ),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   bool dataExists = App().checkDataExistence('working');
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
   if (!dataExists) {
     App().setLocal('working', '0');
@@ -89,6 +85,7 @@ class App {
   }
 
   String calculateTotalTime(List<String> starts, List<String> finishes) {
+    print('calculating time: start: $starts, ends: $finishes');
     int totalSeconds = 0;
 
     int iterations =
@@ -244,6 +241,35 @@ class App {
           'workers/$user/data/$currentYear/$currentMonth/$currentDay/time/start',
           formattedTime);
       setValue('workers/$user/working', true);
+    }
+  }
+
+  void toggleBreak(bool working, bool isOnBreak, user) async {
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    int currentMonth = now.month;
+    int currentDay = now.day;
+
+    // get current data hh/ss/mm format
+    String formattedTime = DateFormat('HH:mm:ss').format(now);
+
+    print(
+        '---------- toggeling brake. user: $user, isonbrake: $isOnBreak, working: $working');
+
+    // Print the formatted time
+
+    if (isOnBreak) {
+      addItemToList(
+          'workers/$user/data/$currentYear/$currentMonth/$currentDay/break/stop',
+          formattedTime);
+      setValue('workers/$user/break', false);
+      return;
+    } else {
+      addItemToList(
+          'workers/$user/data/$currentYear/$currentMonth/$currentDay/break/start',
+          formattedTime);
+      setValue('workers/$user/break', true);
+      return;
     }
   }
 

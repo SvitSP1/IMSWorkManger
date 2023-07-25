@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1026107424905",
+    "firebase_url": "https://workmanager-bf739-default-rtdb.firebaseio.com",
+    "project_id": "workmanager-bf739",
+    "storage_bucket": "workmanager-bf739.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026107424905:android:3902d7fa3737586eb90658",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1026107424905-872np52dvi8vipcug0qls0ljfb233j51.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3U5_6A_pW4YDo1BMFdog3RmYvJUat9IM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1026107424905-872np52dvi8vipcug0qls0ljfb233j51.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1026107424905-3vbrh4jamfh07rsi2g24oqf511u0021e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.app.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

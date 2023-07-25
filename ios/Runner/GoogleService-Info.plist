@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1026107424905-8sbgqf6rbp2hj0vk72k4bdi082c0tnn8.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1026107424905-8sbgqf6rbp2hj0vk72k4bdi082c0tnn8</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDD8gVytA_jf-J8F0pTCcVOE2OxX2wcuDM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1026107424905</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>si.ecas.svit.samardzija.pavletic</string>
+	<key>PROJECT_ID</key>
+	<string>workmanager-bf739</string>
+	<key>STORAGE_BUCKET</key>
+	<string>workmanager-bf739.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1026107424905:ios:c2a466c4fd5df61bb90658</string>
+	<key>DATABASE_URL</key>
+	<string>https://workmanager-bf739-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
